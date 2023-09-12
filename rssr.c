@@ -40,6 +40,12 @@ feeds_open(char *mode)
 	strcpy(config, dir);
 	strcat(config, "feeds");
 
+	/* if possibly creating, ensure path */
+	if(mode[0] == 'a' && mkpath(config)) {
+		log_err("failed to create config dir\n");
+		exit(1);
+	}
+
 	/* check and open */
 	FILE *feeds;
 	if (mode[0] != 'a' && access(config, F_OK) != 0) {
@@ -56,26 +62,10 @@ feeds_open(char *mode)
 static void
 add_rss(char *url, char *dest, char *filter)
 {
-	/* build path to feeds dir/file */
-	char config[2000];
-	if (strchr(dir, '/')[strlen(dir)-1] != '/') {
-		strcat(dir, "/");
-	}
-	strcpy(config, dir);
+	/* check/open feeds first */
+	FILE *feeds = feeds_open("a");
 
-	/* make sure the dir exists */
-	if(mkpath(config)) {
-		log_err("failed to create config dir\n");
-		exit(1);
-	}
-
-	/* open file and add feed */
-	FILE *feeds;
-	strcat(config, "feeds");
-	if (!(feeds = fopen(config, "a"))) {
-		log_err("failed to open feeds file\n");
-		exit(1);
-	}
+	/* add feed */
 	fprintf(feeds, "%s;%s;%s;\n", url, dest, filter);
 	fclose(feeds);
 	log_info("added feed\n");
@@ -84,6 +74,7 @@ add_rss(char *url, char *dest, char *filter)
 static void
 del_rss(long id)
 {
+	/* check/open feeds first */
 	FILE *feeds = feeds_open("r+");
 
 	/* create buffer to hold modified file */
@@ -112,30 +103,13 @@ del_rss(long id)
 static void
 list_rss(char *option)
 {
-	/* build config path */
-	char config[2000];
-	if (strchr(dir, '/')[strlen(dir)-1] != '/') {
-		strcat(dir, "/");
-	}
-	strcpy(config, dir);
-	strcat(config, "feeds");
+	/* check/open feeds first */
+	FILE *feeds = feeds_open("r");
 
-	/* check and open */
-	FILE *feeds;
-	if (access(config, F_OK) != 0) {
-		log_info("no feeds, nothing to show\n");
-		exit(0);
-	} if (!(feeds = fopen(config, "r"))) {
-		log_err("failed to open feeds file\n");
-		exit(1);
-	}
-
-	/* read and print in desired format */
-	char line[2000];
-	char **downloaded;
+	/* print all depending on option */
 	int id = 0;
+	char line[2000];
 	while(fgets(line, 2000, feeds) != NULL) {
-		/* filter url, destination, filter */
 		switch(option[0]) {
 			case 'u':
 				strchr(line, ';')[0] = '\0';
@@ -152,7 +126,6 @@ list_rss(char *option)
 		}
 		printf("%i: %s", id++, line);
 	}
-
 }
 
 static void
@@ -182,25 +155,10 @@ add_torrents(char **files, char *dest)
 static void
 handle_feeds()
 {
-	char config[2000];
-	if (strchr(dir, '/')[strlen(dir)-1] != '/') {
-		strcat(dir, "/");
-	}
-	strcpy(config, dir);
-	strcat(config, "feeds");
+	/* check/open feeds first */
+	FILE *feeds = feeds_open("r");
 
-	if (access(config, F_OK) != 0) {
-		log_info("no feeds, nothing to do\n");
-		exit(0);
-	}
-
-	FILE *feeds;
-	if (!(feeds = fopen(config, "r"))) {
-		log_err("failed to open feeds file\n");
-		exit(1);
-	}
-
-	/* setup cache dir for torrent files */
+	/* cache path for torrent files */
 	char cache[2000];
 	strcpy(cache, dir);
 	strcat(cache, "cache");
@@ -208,7 +166,7 @@ handle_feeds()
 	/* parse each line */
 	char line[2000];
 	char **downloaded;
-	while(fgets(line, 2000, feeds) != NULL) {
+	while(fgets(line, 2000, feeds) != NULL && sleep(delay)) {
 		/* filter url, destination, filter */
 		char url[2000];
 		char dest[2000];
@@ -222,7 +180,6 @@ handle_feeds()
 
 		/* download and add results */
 		add_torrents(rss_download(url, cache, filter, downloaded), dest);
-		sleep(delay);
 	}
 }
 
