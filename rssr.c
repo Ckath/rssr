@@ -251,7 +251,7 @@ main(int argc, char *argv[])
 				log_err("missing dest\n");
 				return 1;
 			} if (argc > 4) {
-				strcpy(filter, argv[3]);
+				strcpy(filter, argv[4]);
 			}
 			strcpy(dest, argv[3]);
 			add_rss(url, dest, filter);
