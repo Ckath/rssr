@@ -8,6 +8,10 @@
 #include "utils/rss.h"
 #include "utils/utils.h"
 
+#define ADD 0
+#define DEL 1
+#define LIST 2
+
 /* config, initialize with default */
 static int delay = 22;
 static char cmd[1337] ="transmission-remote -a \"{file}\" -g \"{dest}\"";
@@ -16,15 +20,15 @@ static char dir[1337] = "~/.config/rssr/";
 static void
 usage()
 {
-	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url;dest;filter] [-d id] [-p c/u/d]\n"\
+	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url dest filter] [-d id] [-p c/u/d]\n"\
 			"options\n"\
 			"-t\tdelay between requests (seconds), default 22\n"\
 			"-c\ttorrent add cmd (use {file} and {dest} in it), default transmission-remote -a \"{file}\" -g \"{dest}\"\n"\
 			"-l\tconfig and cache location, default ~/.config/rssr/\n"\
 			"actions\n"\
-			"-a\tadd url;dest to config the ;filter is optional\n"\
+			"-a\tadd \"url\" \"dest\" to config the filter is optional\n"\
 			"-d\tdelete entry matching id\n"\
-			"-p\tprint current feeds, c csv, u urls, d destinations\n",
+			"-p\tprint current feeds in format, c csv, u urls, d destinations\n",
 			stderr);
 	exit(1);
 }
@@ -38,7 +42,6 @@ feeds_open(char *mode)
 		strcat(dir, "/");
 	}
 	strcpy(config, dir);
-	strcat(config, "feeds");
 
 	/* if possibly creating, ensure path */
 	if(mode[0] == 'a' && mkpath(config)) {
@@ -48,6 +51,7 @@ feeds_open(char *mode)
 
 	/* check and open */
 	FILE *feeds;
+	strcat(config, "feeds");
 	if (mode[0] != 'a' && access(config, F_OK) != 0) {
 		log_info("no feeds, nothing to do\n");
 		exit(0);
@@ -66,7 +70,7 @@ add_rss(char *url, char *dest, char *filter)
 	FILE *feeds = feeds_open("a");
 
 	/* add feed */
-	fprintf(feeds, "%s;%s;%s;\n", url, dest, filter);
+	fprintf(feeds, "%s%s%s\n", url, dest, filter);
 	fclose(feeds);
 	log_info("added feed\n");
 }
@@ -112,16 +116,17 @@ list_rss(char *option)
 	while(fgets(line, 2000, feeds) != NULL) {
 		switch(option[0]) {
 			case 'u':
-				strchr(line, ';')[0] = '\0';
+				strchr(line, '')[0] = '\0';
 				strcat(line, "\n");
 				break;
 			case 'd':
-				strcpy(line, strchr(line, ';')+1);
-				strchr(line, ';')[0] = '\0';
+				strcpy(line, strchr(line, '')+1);
+				strchr(line, '')[0] = '\0';
 				strcat(line, "\n");
 				break;
 			case 'c':
 			default:
+				strrplc(line, "", ",");
 				break;
 		}
 		printf("%i: %s", id++, line);
@@ -172,11 +177,11 @@ handle_feeds()
 		char dest[2000];
 		char filter[2000];
 		strcpy(url, line);
-		strcpy(dest, strchr(line, ';')+1);
-		strcpy(filter, strchr(dest, ';')+1);
-		strchr(url, ';')[0] = '\0';
-		strchr(dest, ';')[0] = '\0';
-		strchr(filter, ';')[0] = '\0';
+		strcpy(dest, strchr(line, '')+1);
+		strcpy(filter, strchr(dest, '')+1);
+		strchr(url, '')[0] = '\0';
+		strchr(dest, '')[0] = '\0';
+		strchr(filter, '')[0] = '\0';
 
 		/* download and add results */
 		add_torrents(rss_download(url, cache, filter, downloaded), dest);
@@ -201,6 +206,7 @@ main(int argc, char *argv[])
 
 	/* handle options, update values */
 	unsigned c;
+	char a = -1;
 	while ((c = getopt(argc, argv, "t:c:l:a:d:p:h")) != -1) {
 		switch (c) {
 			case 't':
@@ -222,34 +228,45 @@ main(int argc, char *argv[])
 				strrplc(dir, "~", home);
 				break;
 			case 'a':
-				if (!strchr(optarg, ';') || strlen(optarg) > 2000) {
-					log_err("invalid format\n");
-					exit(1);
-				}
+				a = ADD;
 				strcpy(url, optarg);
-				strchr(url, ';')[0] = '\0';
-				strcpy(dest, strchr(optarg, ';')+1);
-				if (strchr(dest, ';')) {
-					strcpy (filter, strchr(dest, ';')+1);
-					strchr(dest, ';')[0] = '\0';
-				}
-				add_rss(url, dest, filter);
-				exit(0);
 				break;
 			case 'd':
+				a = DEL;
 				id = strtol(optarg, NULL, 10);
-				del_rss(id);
-				exit(0);
+				break;
 			case 'p':
-				list_rss(optarg ? optarg : "");
-				exit(0);
+				a = LIST;
+				strcpy(filter, optarg ? optarg : "");
+				break;
 			case 'h':
 			default:
 				usage();
 		}
 	}
 
+	switch(a) {
+		case ADD:
+			if (argc < 4) {
+				log_err("missing dest\n");
+				return 1;
+			} if (argc > 4) {
+				strcpy(filter, argv[3]);
+			}
+			strcpy(dest, argv[3]);
+			add_rss(url, dest, filter);
+			break;
+		case DEL:
+			del_rss(id);
+			break;
+		case LIST:
+			list_rss(filter);
+			break;
+		default:
+			handle_feeds();
+			break;
+	}
+
 	/* not doing any action, do the thing */
-	handle_feeds();
 	return 0;
 }
