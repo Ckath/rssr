@@ -70,7 +70,7 @@ add_rss(char *url, char *dest, char *filter)
 	FILE *feeds = feeds_open("a");
 
 	/* add feed */
-	fprintf(feeds, "%s%s%s\n", url, dest, filter);
+	fprintf(feeds, "%s%s%s\n", url, dest, filter);
 	fclose(feeds);
 	log_info("added feed\n");
 }
@@ -181,7 +181,6 @@ handle_feeds()
 		strcpy(filter, strchr(dest, '')+1);
 		strchr(url, '')[0] = '\0';
 		strchr(dest, '')[0] = '\0';
-		strchr(filter, '')[0] = '\0';
 
 		/* download and add results */
 		add_torrents(rss_download(url, cache, filter, downloaded), dest);
