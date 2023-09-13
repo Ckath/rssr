@@ -149,6 +149,7 @@ add_torrents(char **files, char *dest)
 		strcpy(c, cmd);
 		strrplc(c, "{file}", path);
 		strrplc(c, "{dest}", dest);
+		log_info("cmd output: ");
 		if (!system(c)) {
 			log_info("torrent %s added\n", files[i]);
 		} else {
@@ -171,7 +172,7 @@ handle_feeds()
 	/* parse each line */
 	char line[2000];
 	char **downloaded;
-	while(fgets(line, 2000, feeds) != NULL && sleep(delay)) {
+	while(fgets(line, 2000, feeds) != NULL && !sleep(delay)) {
 		/* filter url, destination, filter */
 		char url[2000];
 		char dest[2000];
@@ -181,6 +182,7 @@ handle_feeds()
 		strcpy(filter, strchr(dest, '')+1);
 		strchr(url, '')[0] = '\0';
 		strchr(dest, '')[0] = '\0';
+		strchr(filter, '\n')[0] = '\0';
 
 		/* download and add results */
 		add_torrents(rss_download(url, cache, filter, downloaded), dest);
