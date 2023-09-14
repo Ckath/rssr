@@ -14,19 +14,19 @@
 
 /* config, initialize with default */
 static int delay = 22;
-static char cmd[1337] ="transmission-remote -a \"{file}\" -g \"{dest}\"";
-static char dir[1337] = "~/.config/rssr/";
+static char cmd[2000] ="transmission-remote -a \"{file}\" -g \"{dest}\"";
+static char dir[2000] = "~/.config/rssr/";
 
 static void
 usage()
 {
-	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url dest filter] [-d id] [-p c/u/d]\n"\
+	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url -g dest -f filter] [-d id] [-p c/u/d]\n"\
 			"options\n"\
 			"-t\tdelay between requests (seconds), default 22\n"\
 			"-c\ttorrent add cmd (use {file} and {dest} in it), default transmission-remote -a \"{file}\" -g \"{dest}\"\n"\
 			"-l\tconfig and cache location, default ~/.config/rssr/\n"\
 			"actions\n"\
-			"-a\tadd \"url\" \"dest\" to config the filter is optional\n"\
+			"-a\tadd \"url\" -g \"dest\" to config the -f filter is optional\n"\
 			"-d\tdelete entry matching id\n"\
 			"-p\tprint current feeds in format, c csv, u urls, d destinations\n",
 			stderr);
@@ -140,7 +140,7 @@ add_torrents(char **files, char *dest)
 		return; /* nothing to do */
 	} for (int i = 0; files[i]; ++i) {
 		char path[2000];
-		char c[1337];
+		char c[2000];
 
 		strcpy(path, dir); 
 		strcat(path, "cache/");
@@ -208,13 +208,13 @@ main(int argc, char *argv[])
 	/* handle options, update values */
 	unsigned c;
 	char a = -1;
-	while ((c = getopt(argc, argv, "t:c:l:a:d:p:h")) != -1) {
+	while ((c = getopt(argc, argv, "t:c:l:g:f:a:d:p:h")) != -1) {
 		switch (c) {
 			case 't':
 				delay = strtoul(optarg, NULL, 0);
 				break;
 			case 'c':
-				if (strlen(optarg) > 1337) { 
+				if (strlen(optarg) > 2000) { 
 					log_err("cmd too long\n");
 					exit(1);
 				}
@@ -223,10 +223,24 @@ main(int argc, char *argv[])
 			case 'l':
 				if (strlen(optarg) > 2000) { 
 					log_err("path too long\n");
-					exit(1);
+					return 1;
 				}
 				strcpy(dir, optarg);
 				strrplc(dir, "~", home);
+				break;
+			case 'g':
+				if (strlen(optarg) > 2000) { 
+					log_err("path too long\n");
+					return 1;
+				}
+				strcpy(dest, optarg);
+				break;
+			case 'f':
+				if (strlen(optarg) > 2000) { 
+					log_err("filter too long\n");
+					return 1;
+				}
+				strcpy(filter, optarg);
 				break;
 			case 'a':
 				a = ADD;
@@ -248,13 +262,10 @@ main(int argc, char *argv[])
 
 	switch(a) {
 		case ADD:
-			if (argc < 4) {
+			if (!dest[0]) {
 				log_err("missing dest\n");
 				return 1;
-			} if (argc > 4) {
-				strcpy(filter, argv[4]);
 			}
-			strcpy(dest, argv[3]);
 			add_rss(url, dest, filter);
 			break;
 		case DEL:
