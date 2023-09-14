@@ -67,7 +67,7 @@ rss_download(char *url, char *dest, char *filter, char **downloaded)
 	int i = 0;
 	while ((item = (rss_item(item)))) {
 		/* filter if set */
-		if (filter && filter[0] && !item_match(item, filter)) {
+		if (filter && filter[0] && !item_match(strdupa(item), filter)) {
 			continue;
 		}
 
