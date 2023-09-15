@@ -274,11 +274,10 @@ main(int argc, char *argv[])
 		case LIST:
 			list_rss(filter);
 			break;
-		default:
+		default: /* not doing any action, do the thing */
 			handle_feeds();
 			break;
 	}
 
-	/* not doing any action, do the thing */
 	return 0;
 }
