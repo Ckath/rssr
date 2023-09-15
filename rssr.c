@@ -18,16 +18,16 @@ static char cmd[2000] ="transmission-remote -a \"{file}\" -w \"{dest}\"";
 static char dir[2000] = "~/.config/rssr/";
 
 static void
-usage()
+usage(void)
 {
-	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url -w dest -f filter] [-d id] [-p c/u/d]\n"\
-			"options\n"\
-			"-t\tdelay between requests (seconds), default 22\n"\
-			"-c\ttorrent add cmd (use {file} and {dest} in it), default transmission-remote -a \"{file}\" -w \"{dest}\"\n"\
-			"-l\tconfig and cache location, default ~/.config/rssr/\n"\
-			"actions\n"\
-			"-a\tadd \"url\" -w \"dest\" to config the -f filter is optional\n"\
-			"-d\tdelete entry matching id\n"\
+	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url -w dest -f filter] [-d id] [-p c/u/d]\n"
+			"options\n"
+			"-t\tdelay between requests (seconds), default 22\n"
+			"-c\ttorrent add cmd (use {file} and {dest} in it), default transmission-remote -a \"{file}\" -w \"{dest}\"\n"
+			"-l\tconfig and cache location, default ~/.config/rssr/\n"
+			"actions\n"
+			"-a\tadd \"url\" -w \"dest\" to config the -f filter is optional\n"
+			"-d\tdelete entry matching id\n"
 			"-p\tprint current feeds in format, c csv, u urls, d destinations\n",
 			stderr);
 	exit(1);
@@ -158,7 +158,7 @@ add_torrents(char **files, char *dest)
 }
 
 static void
-handle_feeds()
+handle_feeds(void)
 {
 	/* check/open feeds first */
 	FILE *feeds = feeds_open("r");
