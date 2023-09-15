@@ -23,6 +23,12 @@ clean:
 	@echo cleaning...
 	@rm -f ${NAME} ${OBJ} mods/modtape.*
 
-run: ${NAME}
-	@echo launching...
-	@./${NAME}
+install: ${NAME}
+	@echo installing executable file to ${DESTDIR}/bin
+	@mkdir -p ${DESTDIR}/bin
+	@cp -f ${NAME} ${DESTDIR}/bin/${NAME}
+	@chmod 755 ${DESTDIR}/bin/${NAME}
+
+uninstall: ${NAME}
+	@echo removing executable file from ${DESTDIR}/bin
+	@rm -f ${DESTDIR}/bin/${NAME}
