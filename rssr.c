@@ -14,19 +14,19 @@
 
 /* config, initialize with default */
 static int delay = 22;
-static char cmd[2000] ="transmission-remote -a \"{file}\" -g \"{dest}\"";
+static char cmd[2000] ="transmission-remote -a \"{file}\" -w \"{dest}\"";
 static char dir[2000] = "~/.config/rssr/";
 
 static void
 usage()
 {
-	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url -g dest -f filter] [-d id] [-p c/u/d]\n"\
+	fputs("usage: rssr [-t delay] [-c cmd] [-l dir] [-a url -w dest -f filter] [-d id] [-p c/u/d]\n"\
 			"options\n"\
 			"-t\tdelay between requests (seconds), default 22\n"\
-			"-c\ttorrent add cmd (use {file} and {dest} in it), default transmission-remote -a \"{file}\" -g \"{dest}\"\n"\
+			"-c\ttorrent add cmd (use {file} and {dest} in it), default transmission-remote -a \"{file}\" -w \"{dest}\"\n"\
 			"-l\tconfig and cache location, default ~/.config/rssr/\n"\
 			"actions\n"\
-			"-a\tadd \"url\" -g \"dest\" to config the -f filter is optional\n"\
+			"-a\tadd \"url\" -w \"dest\" to config the -f filter is optional\n"\
 			"-d\tdelete entry matching id\n"\
 			"-p\tprint current feeds in format, c csv, u urls, d destinations\n",
 			stderr);
@@ -207,7 +207,7 @@ main(int argc, char *argv[])
 	/* handle options, update values */
 	unsigned c;
 	char a = -1;
-	while ((c = getopt(argc, argv, "t:c:l:g:f:a:d:p:h")) != -1) {
+	while ((c = getopt(argc, argv, "t:c:l:w:f:a:d:p:h")) != -1) {
 		switch (c) {
 			case 't':
 				delay = strtoul(optarg, NULL, 0);
@@ -227,7 +227,7 @@ main(int argc, char *argv[])
 				strcpy(dir, optarg);
 				strrplc(dir, "~", home);
 				break;
-			case 'g':
+			case 'w':
 				if (strlen(optarg) > 2000) { 
 					log_err("path too long\n");
 					return 1;

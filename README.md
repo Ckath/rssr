@@ -15,13 +15,13 @@ besides having a reasonable OS, libcurl should be the only dep
 
 ## usage
 ```
-usage: rssr [-t delay] [-c cmd] [-l dir] [-a url -g dest -f filter] [-d id] [-p c/u/d]
+usage: rssr [-t delay] [-c cmd] [-l dir] [-a url -w dest -f filter] [-d id] [-p c/u/d]
 options
 -t	delay between requests (seconds), default 22
--c	torrent add cmd (use {file} and {dest} in it), default transmission-remote -a "{file}" -g "{dest}"
+-c	torrent add cmd (use {file} and {dest} in it), default transmission-remote -a "{file}" -w "{dest}"
 -l	config and cache location, default ~/.config/rssr/
 actions
--a	add "url" -g "dest" to config the -f filter is optional
+-a	add "url" -w "dest" to config the -f filter is optional
 -d	delete entry matching id
 -p	print current feeds in format, c csv, u urls, d destinations
 ```
@@ -31,7 +31,7 @@ the rss parser is minimal and meant to work with most rss feeds, there doesnt se
 basic usage will be very simple:
 ```
 # add feed
-rssr -a "https://url.com/rssfeed" -g "/mnt/drive/myquestionablemedia/qualityshow"
+rssr -a "https://url.com/rssfeed" -w "/mnt/drive/myquestionablemedia/qualityshow"
 # grab and add every (new) torrent found in feed
 rssr
 # or automate it
