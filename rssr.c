@@ -149,7 +149,6 @@ add_torrents(char **files, char *dest)
 		strcpy(c, cmd);
 		strrplc(c, "{file}", path);
 		strrplc(c, "{dest}", dest);
-		log_info("cmd output: ");
 		if (!system(c)) {
 			log_info("torrent %s added\n", files[i]);
 		} else {
