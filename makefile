@@ -1,15 +1,12 @@
 NAME = rssr
 
 CC       ?= gcc
-CPPFLAGS += -Imods/markov/chains/deps
-CFLAGS   += -g
+CFLAGS   += -Os
 LDFLAGS  += -lcurl
 
 SRC  = ${NAME}.c
 SRC += $(wildcard utils/*.c)
 OBJ  = ${SRC:.c=.o}
-
-.PHONY: update_mods
 
 .c.o:
 	@echo CC -c $<
@@ -21,7 +18,7 @@ ${NAME}: ${SRC} ${OBJ}
 
 clean:
 	@echo cleaning...
-	@rm -f ${NAME} ${OBJ} mods/modtape.*
+	@rm -f ${NAME} ${OBJ}
 
 install: ${NAME}
 	@echo installing executable file to ${DESTDIR}/bin
