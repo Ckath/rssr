@@ -138,7 +138,7 @@ add_torrents(char **files, char *dest)
 {
 	if (!files) {
 		return; /* nothing to do */
-	} for (int i = 0; files[i]; ++i) {
+	} for (int i = 0; files[i][0]; ++i) {
 		char path[2000];
 		char c[2000];
 

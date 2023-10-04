@@ -64,7 +64,7 @@ rss_download(char *url, char *dest, char *filter, char **downloaded)
 
 	/* loop over each item and download matches */
 	char *item = rss;
-	int i = 0;
+	int i = 1;
 	while ((item = (rss_item(item)))) {
 		/* filter if set */
 		if (filter && filter[0] && !item_match(strdupa(item), filter)) {
@@ -72,17 +72,18 @@ rss_download(char *url, char *dest, char *filter, char **downloaded)
 		}
 
 		/* download and save filename, only when non existant */
-		char title[255];
+		char title[512];
 		if (!curl_download(item_link(strdupa(item)), dest, title)) {
 			continue;
 		}
 		downloaded = realloc(downloaded, ++i*sizeof(char *));
-		downloaded[i-1] = malloc(255);
-		strcpy(downloaded[i-1], title);
+		downloaded[i-2] = malloc(512);
+		strcpy(downloaded[i-2], title);
 	}
 
 	if (downloaded) {
-		downloaded[i] = NULL;
+		downloaded[i-1] = malloc(1);
+		downloaded[i-1][0] = '\0';
 	}
 	free(res.memory);
 	return downloaded;

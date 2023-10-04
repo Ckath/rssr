@@ -32,9 +32,10 @@ static size_t
 curl_hcb(char *buffer, size_t size, size_t nitems, void *userdata)
 {
 	/* capture filename from content-disposition */
-	if (!strncmp(buffer, "content-disposition:", 20)) {
+	if (!strncmp(buffer, "content-disposition:", 20) &&
+			strstr(buffer, "filename")) {
 		char *name = (char *) userdata;
-		strcpy(name, strstr(buffer, "filename")+10);
+		strncpy(name, strstr(buffer, "filename")+10, 511);
 		strchr(name, '"')[0] = '\0';
 	}
 
@@ -46,6 +47,7 @@ curl_req(char *url, chunk *res)
 {
 	if (!curl_init) { /* req always done before download so this is fine */
 		curl_global_init(CURL_GLOBAL_ALL);
+		curl_init = 1;
 	}
 
 	/* configure curl request */
@@ -85,7 +87,7 @@ curl_download(char *url, char *dest, char *name)
 	if (strlen(name) < 1) {
 		strcpy(name, basename(url));
 	}
-	strcpy(name, curl_easy_unescape(curl, name, 0, &(int){0}));
+	strncpy(name, curl_easy_unescape(curl, name, 0, &(int){0}), 511);
 	
 	/* make sure path exists */
 	if(mkpath(dest)) {
